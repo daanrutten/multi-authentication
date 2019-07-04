@@ -1,0 +1,36 @@
+{
+  "name": "multi-authentication",
+  "version": "0.0.1",
+  "description": "An easy to integrate authentication module with support for Firebase",
+  "scripts": {
+    "build": "tsc"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daanrutten/multi-authentication.git"
+  },
+  "keywords": [
+    "multi",
+    "authentication",
+    "jwt",
+    "json",
+    "web",
+    "token"
+  ],
+  "author": "Daan Rutten",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/daanrutten/multi-authentication/issues"
+  },
+  "homepage": "https://github.com/daanrutten/multi-authentication#readme",
+  "dependencies": {
+    "jsonwebtoken": "^8.5.1"
+  },
+  "devDependencies": {
+    "@types/node": "^12.0.12",
+    "tslint": "^5.16.0",
+    "typescript": "^3.4.5"
+  }
+}
