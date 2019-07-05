@@ -6,6 +6,7 @@ import firebase from "firebase-admin";
 import mongoose from "mongoose";
 import { authRoute, initializeAuth, IUser as IAuthUser, preAuthRoute } from "multi-authentication";
 import firebaseRoute from "multi-authentication/providers/Firebase";
+import tokenRoute from "multi-authentication/providers/Token";
 import { prop, Typegoose } from "typegoose";
 
 // Setup mongoose
@@ -48,6 +49,8 @@ const app = express();
 app.use("/public", preAuthRoute);
 // The firebaseRoute exposes the POST /signInWithFirebase route
 app.use("/public", firebaseRoute);
+// The tokenRoute exposes the POST /signInWithToken route
+app.use("/public", tokenRoute);
 // The authRoute is middleware to ensure a valid authorization header and provides the user and provider as locals
 app.use("/auth", authRoute);
 

@@ -15,7 +15,7 @@ export class FirebaseRoute {
         const info = await firebase.auth().getUser(user.uid);
 
         // Sign in the user
-        return AuthConfig.signIn(user.uid, info, "firebase:" + user.firebase.sign_in_provider);
+        return AuthConfig.signIn("firebase:" + user.uid, info, "firebase:" + user.firebase.sign_in_provider);
     }
 }
 
