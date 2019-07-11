@@ -6,7 +6,7 @@ Each of the providers provides their own routes for obtaining a custom token. Th
 import express from "express";
 import firebase from "firebase-admin";
 import mongoose from "mongoose";
-import authRoute, { AuthRoute, IUser as IAuthUser } from "multi-authentication";
+import authRoute, { AuthRoute } from "multi-authentication";
 import tokenRoute from "multi-authentication/providers/Token";
 import { prop, Typegoose } from "typegoose";
 
@@ -14,7 +14,7 @@ import { prop, Typegoose } from "typegoose";
 mongoose.connect(`mongodb://${process.env.DB_HOST || "localhost"}:27017/${process.env.MONGO_DB}`, { useCreateIndex: true, useFindAndModify: false, useNewUrlParser: true });
 
 /** Representation of a user in the database */
-class IUser extends Typegoose implements IAuthUser {
+class IUser extends Typegoose {
     /** Unique identifier of the user */
     @prop({ unique: true, required: true })
     public uid: string = "";
@@ -31,6 +31,8 @@ const User = new IUser().getModelForClass(IUser, { schemaOptions: { strict: "thr
 AuthRoute.initializeAuth({
     // The Mongoose model for a user
     userModel: User,
+    // The Mongoose key of the model used as uid
+    userUid: "uid",
     // A function to construct a user given its uid and info (optional)
     userConstructor: (uid: string, info: any) => new User({ uid, info }),
     // The filename of the public key used for verifying JWT tokens
