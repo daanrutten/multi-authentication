@@ -7,7 +7,8 @@ import express from "express";
 import firebase from "firebase-admin";
 import mongoose from "mongoose";
 import authRoute, { AuthRoute } from "multi-authentication";
-import tokenRoute from "multi-authentication/providers/Token";
+import tokenRoute from "multi-authentication/dist/providers/Token";
+import totpRoute from "multi-authentication/dist/providers/TOTP";
 import { prop, Typegoose } from "typegoose";
 
 // Setup mongoose
@@ -22,6 +23,10 @@ class IUser extends Typegoose {
     /** Additional info about the user given by the authentication provider */
     @prop()
     public info: any;
+
+    /** Claims for required sign in methods */
+    @prop()
+    public claims: Record<string, true>;
 }
 
 // Retrieve the Mongoose model associated with the schema
@@ -50,6 +55,8 @@ const app = express();
 
 // The tokenRoute exposes the POST /signInWithToken route
 app.use("/public", tokenRoute);
+// The totpRoute exposes the POST /signInWithTOTP and the POST /signUpWithTOTP route
+app.use("/public", totpRoute);
 // The authRoute is middleware to ensure a valid authorization header and provides the user and provider as locals
 app.use("/auth", authRoute);
 

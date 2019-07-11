@@ -5,6 +5,10 @@ import firebase from "firebase-admin";
 import fs from "fs";
 import { Document, Model } from "mongoose";
 
+interface IUser {
+    claims?: Record<string, boolean>;
+}
+
 export class AuthRoute {
     public static router = express.Router();
 
@@ -22,7 +26,7 @@ export class AuthRoute {
 
     /** Verifies a token and returns the corresponding user */
     @use(true)
-    public static async verifyToken(authorization: string): Promise<{ user: Document, provider: any }> {
+    public static async verifyToken(authorization: string): Promise<{ user: IUser & Document, provider: any }> {
         assert(this.authOptions.userModel, "The userModel parameter is required in the authentication module options");
         const [authType, idToken] = authorization.split(" ");
 
@@ -33,13 +37,22 @@ export class AuthRoute {
         const payload = await firebase.auth(this.authOptions.firebaseApp).verifyIdToken(idToken);
 
         // Find and update the user in the database
-        const User = this.authOptions.userModel as Model<Document>;
+        const User = this.authOptions.userModel as Model<IUser & Document>;
         let user = await User.findOne({ [this.authOptions.userUid || "uid"]: payload.uid });
 
         if (!user) {
             const info = await firebase.auth().getUser(payload.uid);
-            user = this.authOptions.userConstructor ? this.authOptions.userConstructor(payload.uid, payload.firebase) as Document : new User({ [this.authOptions.userUid || "uid"]: payload.uid, info });
+            user = this.authOptions.userConstructor ? this.authOptions.userConstructor(payload.uid, payload.firebase) as IUser & Document : new User({ [this.authOptions.userUid || "uid"]: payload.uid, info });
             await user.save();
+        }
+
+        // Check for additional claims
+        if (user.claims) {
+            for (const key in user.claims) {
+                if (user.claims[key]) {
+                    assert(payload[key], `The user is required to log in with the additional claim of ${key}`);
+                }
+            }
         }
 
         return { user, provider: payload.provider ? payload.provider : payload.firebase.sign_in_provider };
