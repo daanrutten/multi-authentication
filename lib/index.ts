@@ -42,7 +42,7 @@ export class AuthRoute {
 
         if (!user) {
             const info = await firebase.auth().getUser(payload.uid);
-            user = this.authOptions.userConstructor ? this.authOptions.userConstructor(payload.uid, payload.firebase) as IUser & Document : new User({ [this.authOptions.userUid || "uid"]: payload.uid, info });
+            user = this.authOptions.userConstructor ? this.authOptions.userConstructor(payload.uid, info) as IUser & Document : new User({ [this.authOptions.userUid || "uid"]: payload.uid, info });
             await user.save();
         }
 
