@@ -1,6 +1,6 @@
 {
   "name": "multi-authentication",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "An easy to integrate authentication module with support for Firebase",
   "scripts": {
     "build": "tsc"
