@@ -34,7 +34,7 @@ export class TOTPRoute {
         }
 
         // Create a custom Firebase token
-        return firebase.auth().createCustomToken((user as any)[AuthRoute.authOptions.userUid], { provider, tfa: true });
+        return firebase.auth().createCustomToken((user as any)[AuthRoute.authOptions.userUid || "uid"], { provider, tfa: true });
     }
 
     /** Signs up the user for signing in with TOTP and returns an otp url */

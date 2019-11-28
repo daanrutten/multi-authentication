@@ -5,6 +5,7 @@ Each of the providers provides their own routes for obtaining a custom token. Th
 ```typescript
 import express from "express";
 import firebase from "firebase-admin";
+import fs from "fs";
 import mongoose from "mongoose";
 import authRoute, { AuthRoute } from "multi-authentication";
 import tokenRoute from "multi-authentication/dist/providers/Token";
@@ -34,21 +35,36 @@ const User = new IUser().getModelForClass(IUser, { schemaOptions: { strict: "thr
 
 // Initialize the authentication module
 AuthRoute.initializeAuth({
+    // The Firebase app to use for authentication
+    firebaseApp: firebase.initializeApp({
+        credential: firebase.credential.cert(require(process.env.FIREBASE_CONFIG!)),
+        databaseURL: process.env.FIREBASE_URL
+    }),
     // The Mongoose model for a user
     userModel: User,
     // The Mongoose key of the model used as uid
     userUid: "uid",
     // A function to construct a user given its uid and info (optional)
     userConstructor: (uid: string, info: any) => new User({ uid, info }),
-    // The filename of the public key used for verifying JWT tokens
-    publicKey: "id_rsa.pub",
-    // The filename of the private key used for signing JWT tokens
-    privateKey: "id_rsa",
-    // The Firebase app to use for authentication
-    firebaseApp: firebase.initializeApp({
-        credential: firebase.credential.cert(require(process.env.FIREBASE_CONFIG!)),
-        databaseURL: process.env.FIREBASE_URL
-    })
+    // Encryption and decryption keys
+    keys: {
+        abc123: {
+            // The filename of the private key used for signing JWT tokens
+            privateKey: fs.readFileSync("id_rsa"),
+            // The filename of the public key used for verifying JWT tokens
+            publicKey: fs.readFileSync("id_rsa.pub"),
+            // The algorithm associated with the keys
+            algorithm: "RS256";
+            // The subject to check the token for
+            subject: "token:loginToken";
+            // The provider of the token
+            provider: "token";
+            // The key in the payload used as uid 
+            userUid: "uid";
+            // The number of milliseconds the obtained Firebase token should be valid
+            expiresIn: 24 * 60 * 60 * 1000;
+        }
+    }    
 });
 
 const app = express();

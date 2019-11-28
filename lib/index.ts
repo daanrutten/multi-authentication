@@ -2,32 +2,43 @@ import assert from "assert";
 import express from "express";
 import { use } from "express-requesthandler";
 import firebase from "firebase-admin";
-import fs from "fs";
 import { Document, Model } from "mongoose";
+
+interface IAuthOptions {
+    firebaseApp?: firebase.app.App;
+    userModel: Model<IUser & Document>;
+    userUid?: string;
+    userConstructor?: (uid: string, info: firebase.auth.UserRecord) => IUser & Document;
+    keys: Record<string, IKey>;
+}
 
 interface IUser {
     claims?: Record<string, boolean>;
 }
 
+interface IKey {
+    privateKey?: Buffer;
+    publicKey: Buffer;
+    algorithm: string;
+    subject?: string;
+    provider: string;
+    userUid?: string;
+    expiresIn?: number;
+}
+
 export class AuthRoute {
     public static router = express.Router();
 
-    public static authOptions: Record<string, any> = {};
-    public static publicKey?: Buffer;
-    public static privateKey?: Buffer;
+    public static authOptions: IAuthOptions;
 
     /** Initializes the authentication module */
-    public static initializeAuth(options: Record<string, any>) {
-        Object.assign(this.authOptions, options);
-
-        this.publicKey = this.authOptions.publicKey ? fs.readFileSync(this.authOptions.publicKey) : undefined;
-        this.privateKey = this.authOptions.publicKey ? fs.readFileSync(this.authOptions.privateKey) : undefined;
+    public static initializeAuth(options: IAuthOptions) {
+        this.authOptions = options;
     }
 
     /** Verifies a token and returns the corresponding user */
     @use(true)
     public static async verifyToken(authorization: string): Promise<{ user: IUser & Document, provider: any }> {
-        assert(this.authOptions.userModel, "The userModel parameter is required in the authentication module options");
         const [authType, idToken] = authorization.split(" ");
 
         // Validate the format of the authorization header
@@ -35,6 +46,10 @@ export class AuthRoute {
 
         // Verify the validity of the token
         const payload = await firebase.auth(this.authOptions.firebaseApp).verifyIdToken(idToken);
+
+        if (payload.expiresIn) {
+            assert(payload.expiresIn > new Date(), "The token has expired");
+        }
 
         // Find and update the user in the database
         const User = this.authOptions.userModel as Model<IUser & Document>;

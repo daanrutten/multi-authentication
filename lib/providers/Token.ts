@@ -12,21 +12,33 @@ export class TokenRoute {
     /** Signs in the user using a token obtained before */
     @post()
     public static async signInWithToken(token: string): Promise<string> {
-        assert(AuthRoute.publicKey, "The publicKey parameter is required in the authentication module options");
+        const decoded = jwt.decode(token, { complete: true }) as any;
+        assert(decoded.header.kid, "The token should contain a kid");
+
+        const key = AuthRoute.authOptions.keys[decoded.header.kid];
+        assert(key, "The kid is not supported by the authentication module");
 
         // Verify the validity of the token
-        const payload = jwt.verify(token, AuthRoute.publicKey!, { algorithms: ["RS256"], subject: "token:loginToken" }) as { uid: string, info: any };
+        const payload = jwt.verify(token, key.publicKey, { algorithms: [key.algorithm], subject: key.subject }) as any;
+
+        const uid = payload[key.userUid || "uid"] as string;
+        const info = { provider: key.provider } as any;
+
+        if (key.expiresIn) {
+            info.expiresIn = new Date(new Date().getTime() + key.expiresIn);
+        }
 
         // Create a custom Firebase token
-        return firebase.auth().createCustomToken("token:" + payload.uid, payload.info);
+        return firebase.auth().createCustomToken(key.provider + ":" + uid, info);
     }
 
     /** Obtains a token for signing in a user */
-    public static async obtainToken(uid: string): Promise<string> {
-        assert(AuthRoute.privateKey, "The privateKey parameter is required in the authentication module options");
+    public static async obtainToken(uid: string, kid: string, expiresIn?: string | number): Promise<string> {
+        const key = AuthRoute.authOptions.keys[kid];
+        assert(key && key.privateKey, "The kid is not supported by the authentication module");
 
         // Generate the login token
-        const loginToken = jwt.sign({ uid, info: { provider: "token" } }, AuthRoute.privateKey!, { algorithm: "RS256", subject: "token:loginToken" });
+        const loginToken = jwt.sign({ [key.userUid || "uid"]: uid }, key.privateKey!, { algorithm: key.algorithm, keyid: kid, subject: key.subject, expiresIn });
         return loginToken;
     }
 }
