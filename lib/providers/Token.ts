@@ -22,10 +22,15 @@ export class TokenRoute {
         const payload = jwt.verify(token, key.publicKey, { algorithms: [key.algorithm], subject: key.subject }) as any;
 
         const uid = payload[key.userUid || "uid"] as string;
-        const info = { provider: key.provider } as any;
+        const info = { provider: key.provider, ...payload } as any;
 
         if (key.expiresIn) {
             info.expiresIn = new Date(new Date().getTime() + key.expiresIn);
+        }
+
+        // Remove reserved claims
+        for (const claim of ["acr", "amr", "at_hash", "aud", "auth_time", "azp", "cnf", "c_hash", "exp", "firebase", "iat", "iss", "jti", "nbf", "nonce", "sub"]) {
+            delete info[claim];
         }
 
         // Create a custom Firebase token
