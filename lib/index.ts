@@ -8,7 +8,7 @@ interface IAuthOptions {
     firebaseApp?: firebase.app.App;
     userModel: Model<IUser & Document>;
     userUid?: string;
-    userConstructor?: (uid: string, info: firebase.auth.UserRecord) => IUser & Document;
+    userConstructor?: (uid: string, info: firebase.auth.UserRecord, payload: any) => IUser & Document;
     keys: Record<string, IKey>;
 }
 
@@ -57,8 +57,7 @@ export class AuthRoute {
 
         if (!user) {
             const info = await firebase.auth().getUser(payload.uid);
-            Object.assign(info, payload);
-            user = this.authOptions.userConstructor ? this.authOptions.userConstructor(payload.uid, info) as IUser & Document : new User({ [this.authOptions.userUid || "uid"]: payload.uid, info });
+            user = this.authOptions.userConstructor ? this.authOptions.userConstructor(payload.uid, info, payload) as IUser & Document : new User({ [this.authOptions.userUid || "uid"]: payload.uid, info });
             await user.save();
         }
 
