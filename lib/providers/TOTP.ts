@@ -13,7 +13,7 @@ export class TOTPRoute {
     @post()
     public static async signInWithTOTP(token: string, idToken: string): Promise<string> {
         // Verify the validity of the token from Firebase
-        const { user, provider } = await AuthRoute.verifyToken("Bearer " + idToken) as any;
+        const { user, provider } = await AuthRoute.verifyToken("Bearer " + idToken);
         assert(user.tfaSecret, "The user is not signed up for two factor authentication");
 
         // Verify the validity of the token for two factor authentication
@@ -41,7 +41,7 @@ export class TOTPRoute {
     @post()
     public static async signUpForTOTP(idToken: string): Promise<string> {
         // Verify the validity of the token from Firebase
-        const { user } = await AuthRoute.verifyToken("Bearer " + idToken) as any;
+        const { user } = await AuthRoute.verifyToken("Bearer " + idToken);
 
         if (!user.tfaSecret) {
             // Generate a TOTP secret

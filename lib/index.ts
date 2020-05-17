@@ -8,12 +8,13 @@ interface IAuthOptions {
     firebaseApp?: firebase.app.App;
     userModel: Model<IUser & Document>;
     userUid?: string;
-    userConstructor?: (uid: string, info: firebase.auth.UserRecord, payload: any) => IUser & Document;
+    userConstructor?: (uid: string, info: firebase.auth.UserRecord, payload: firebase.auth.DecodedIdToken) => IUser & Document;
     keys: Record<string, IKey>;
 }
 
 interface IUser {
     claims?: Record<string, boolean>;
+    tfaSecret?: string;
 }
 
 interface IKey {
