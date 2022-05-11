@@ -39,7 +39,7 @@ export class AuthRoute {
 
     /** Verifies a token and returns the corresponding user */
     @use(true)
-    public static async verifyToken(authorization: string): Promise<{ user: IUser & Document, provider: any }> {
+    public static async verifyToken(authorization: string): Promise<{ user: IUser & Document, provider: any, signInDate: number }> {
         const [authType, idToken] = authorization.split(" ");
 
         // Validate the format of the authorization header
@@ -71,7 +71,7 @@ export class AuthRoute {
             }
         }
 
-        return { user, provider: payload.provider ? payload.provider : payload.firebase.sign_in_provider };
+        return { user, provider: payload.provider ? payload.provider : payload.firebase.sign_in_provider, signInDate: payload.auth_time };
     }
 }
 
