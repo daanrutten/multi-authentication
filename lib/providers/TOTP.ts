@@ -7,7 +7,7 @@ import speakeasy from "speakeasy";
 import { AuthRoute } from "../index";
 
 export class TOTPRoute {
-    public static router = express.Router();
+    public static router = express.Router() as any;
 
     /** Signs in the user using a TOTP token and a Firebase idToken */
     @post()

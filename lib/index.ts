@@ -28,7 +28,7 @@ interface IKey {
 }
 
 export class AuthRoute {
-    public static router = express.Router();
+    public static router = express.Router() as any;
 
     public static authOptions: IAuthOptions;
 
@@ -54,7 +54,7 @@ export class AuthRoute {
 
         // Find and update the user in the database
         const User = this.authOptions.userModel as Model<IUser & Document>;
-        let user = await User.findOne({ [this.authOptions.userUid || "uid"]: payload.uid });
+        let user = await User.findOne({ [this.authOptions.userUid || "uid"]: payload.uid }) as any;
 
         if (!user) {
             const info = await firebase.auth().getUser(payload.uid);

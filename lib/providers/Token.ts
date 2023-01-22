@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken";
 import { AuthRoute } from "../index";
 
 export class TokenRoute {
-    public static router = express.Router();
+    public static router = express.Router() as any;
 
     /** Signs in the user using a token obtained before */
     @post()
@@ -19,7 +19,7 @@ export class TokenRoute {
         assert(key, "The kid is not supported by the authentication module");
 
         // Verify the validity of the token
-        const payload = jwt.verify(token, key.publicKey, { algorithms: [key.algorithm], subject: key.subject }) as any;
+        const payload = jwt.verify(token, key.publicKey, { algorithms: [key.algorithm as any], subject: key.subject }) as any;
 
         const uid = payload[key.userUid || "uid"] as string;
         const info = { provider: key.provider, ...payload } as any;
@@ -43,7 +43,7 @@ export class TokenRoute {
         assert(key && key.privateKey, "The kid is not supported by the authentication module");
 
         // Generate the login token
-        const loginToken = jwt.sign({ [key.userUid || "uid"]: uid }, key.privateKey!, { algorithm: key.algorithm, keyid: kid, subject: key.subject, expiresIn });
+        const loginToken = jwt.sign({ [key.userUid || "uid"]: uid }, key.privateKey!, { algorithm: key.algorithm as any, keyid: kid, subject: key.subject, expiresIn });
         return loginToken;
     }
 }
